@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QGroupBox" name="m_canvas">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>-5</x>
+      <y>-5</y>
+      <width>811</width>
+      <height>511</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="m_play">
+    <property name="geometry">
+     <rect>
+      <x>59</x>
+      <y>530</y>
+      <width>31</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="m_forward">
+    <property name="geometry">
+     <rect>
+      <x>100</x>
+      <y>530</y>
+      <width>31</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="m_rewind">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>530</y>
+      <width>31</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QSlider" name="timelapse">
+    <property name="geometry">
+     <rect>
+      <x>150</x>
+      <y>530</y>
+      <width>611</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>700</x>
+      <y>510</y>
+      <width>71</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>00:00:00</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>800</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuHello_Qt">
+    <property name="title">
+     <string>file</string>
+    </property>
+    <addaction name="m_openAction"/>
+   </widget>
+   <addaction name="menuHello_Qt"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="m_openAction">
+   <property name="text">
+    <string>open</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
