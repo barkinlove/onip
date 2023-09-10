@@ -94,12 +94,12 @@ void GLWindow::paintGL()
     if (depthChannel) {
         glTexImage2D(GL_TEXTURE_2D,
                      0,
-                     GL_DEPTH,
+                     GL_DEPTH_COMPONENT,
                      frame->getWidth(),
                      frame->getHeight(),
                      0,
-                     GL_DEPTH,
-                     GL_FLOAT,
+                     GL_DEPTH_COMPONENT,
+                     GL_SHORT,
                      frame->getData());
     }
 
