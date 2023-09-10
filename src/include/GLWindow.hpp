@@ -23,15 +23,19 @@ public:
 public slots:
     void onVideoModeChanged(VideoMode mode);
     void onSobelCheckBoxPressed();
+    void onSeek(bool forward);
+    void onSetFrame(std::int32_t frameIdx);
 
 signals:
-    void updateTime(std::uint64_t timestamp);
+    void frameRendered(const openni::VideoFrameRef *frame);
     void onFileLoadedFailure(const std::string &filename);
     void onFileLoaded();
+    void updateTimeline(std::int32_t frameNumber);
 
 private:
     void beforeDraw();
     void drawImg();
+    void closeOni();
 
 private:
     OniDevice m_device;
@@ -40,9 +44,9 @@ private:
     std::vector<openni::VideoStream *> m_streams;
     std::vector<openni::VideoFrameRef> m_frames;
     bool m_loaded;
-    bool m_finished;
     bool m_sobel;
     std::unique_ptr<QTimer> m_timer;
     QTime m_playbackTime;
     VideoMode m_currentMode;
+    std::size_t m_currentFrameIdx;
 };

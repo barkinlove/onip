@@ -5,13 +5,13 @@
 #include <GL/glut.h>
 
 #include <cmath>
+#include <iostream>
 #include <ranges>
 #include <set>
 
 GLWindow::GLWindow(QWidget *parent)
     : QGLWidget(parent)
     , m_loaded(false)
-    , m_finished(false)
     , m_timer(std::make_unique<QTimer>(this))
     , m_currentMode(VideoMode::ColorChannel)
 {
@@ -167,6 +167,8 @@ void GLWindow::paintGL()
     if (!frame->isValid())
         return;
 
+    m_currentFrameIdx = frame->getFrameIndex();
+
     beforeDraw();
 
     bool colorChannel = m_currentMode == VideoMode::ColorChannel
@@ -220,13 +222,24 @@ void GLWindow::paintGL()
                      correctDepth.data());
     }
     drawImg();
-    emit updateTime(frame->getTimestamp());
+    emit frameRendered(frame);
+}
+
+void GLWindow::closeOni()
+{
+    for (auto stream : m_streams) {
+        stream->destroy();
+    }
+    if (m_device.isValid()) {
+        m_device.close();
+    }
 }
 
 void GLWindow::loadFile(const std::string &filename)
 {
+    const bool active = updatesEnabled();
     setUpdatesEnabled(false);
-    m_finished = false;
+    closeOni();
 
     if (!m_device.open(filename.data())) {
         emit onFileLoadedFailure(filename);
@@ -238,12 +251,13 @@ void GLWindow::loadFile(const std::string &filename)
     m_streams.push_back(m_colorStream.get());
     m_streams.push_back(m_depthStream.get());
     m_loaded = m_colorStream.get()->isValid() || m_depthStream.get()->isValid();
-    if (m_loaded)
+    if (m_loaded) {
+        std::int32_t frameNumber = m_device.get().getPlaybackControl()->getNumberOfFrames(
+            m_colorStream.ref());
         emit onFileLoaded();
-    else
+        emit updateTimeline(frameNumber);
+    } else
         emit onFileLoadedFailure(filename);
-
-    setUpdatesEnabled(true);
 }
 
 void GLWindow::onVideoModeChanged(VideoMode mode)
@@ -254,4 +268,23 @@ void GLWindow::onVideoModeChanged(VideoMode mode)
 void GLWindow::onSobelCheckBoxPressed()
 {
     m_sobel != m_sobel;
+}
+
+void GLWindow::onSeek(bool forward)
+{
+    const openni::VideoStream &stream = m_currentMode == VideoMode::ColorChannel
+                                            ? m_colorStream.ref()
+                                            : m_depthStream.ref();
+    m_currentFrameIdx = forward ? ++m_currentFrameIdx : --m_currentFrameIdx;
+    m_device.get().getPlaybackControl()->seek(stream, m_currentFrameIdx);
+    paintGL();
+}
+
+void GLWindow::onSetFrame(std::int32_t frameIdx)
+{
+    const openni::VideoStream &stream = m_currentMode == VideoMode::ColorChannel
+                                            ? m_colorStream.ref()
+                                            : m_depthStream.ref();
+    m_device.get().getPlaybackControl()->seek(stream, frameIdx);
+    //    QTimer::singleShot(0, this, SLOT(update()));
 }

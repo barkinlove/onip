@@ -18,6 +18,7 @@ public:
 
 signals:
     void changeVideoMode(GLWindow::VideoMode mode);
+    void seek(bool forward);
 
 private:
     void keyPressEvent(QKeyEvent *event);
@@ -25,12 +26,14 @@ private:
 private slots:
     void onOpenFile();
     void onForward();
+    void onRewind();
     void onPlay();
-    void onTimeUpdate(std::uint64_t timestamp);
+    void onTimeUpdate(const openni::VideoFrameRef *frame);
     void onFileLoaded();
     void onFileLoadFailure(const std::string &filename);
+    void onTimelineInit(std::uint32_t frameNumber);
+    void onTimelineUpdate(const openni::VideoFrameRef *frame);
 
 private:
     std::unique_ptr<Ui::MainWindow> m_ui;
-    bool m_inAction = false;
 };

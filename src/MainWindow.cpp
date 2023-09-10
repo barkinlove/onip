@@ -22,7 +22,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_ui->m_openAction, &QAction::triggered, this, &MainWindow::onOpenFile);
     connect(m_ui->m_forward, &QPushButton::clicked, this, &MainWindow::onForward);
     connect(m_ui->m_play, &QPushButton::clicked, this, &MainWindow::onPlay);
-    connect(m_ui->m_canvas, &GLWindow::updateTime, this, &MainWindow::onTimeUpdate);
+    connect(m_ui->m_canvas, &GLWindow::frameRendered, this, &MainWindow::onTimeUpdate);
     connect(m_ui->m_canvas, &GLWindow::onFileLoadedFailure, this, &MainWindow::onFileLoadFailure);
     connect(m_ui->m_canvas, &GLWindow::onFileLoaded, this, &MainWindow::onFileLoaded);
     connect(this, &MainWindow::changeVideoMode, m_ui->m_canvas, &GLWindow::onVideoModeChanged);
@@ -30,6 +30,10 @@ MainWindow::MainWindow(QWidget *parent)
             &QCheckBox::clicked,
             m_ui->m_canvas,
             &GLWindow::onSobelCheckBoxPressed);
+    connect(this, &MainWindow::seek, m_ui->m_canvas, &GLWindow::onSeek);
+    connect(m_ui->m_canvas, &GLWindow::updateTimeline, this, &MainWindow::onTimelineInit);
+    connect(m_ui->m_canvas, &GLWindow::frameRendered, this, &MainWindow::onTimelineUpdate);
+    connect(m_ui->m_timeline, &QSlider::sliderMoved, m_ui->m_canvas, &GLWindow::onSetFrame);
 }
 
 MainWindow::~MainWindow() = default;
@@ -43,7 +47,8 @@ void MainWindow::onOpenFile()
                                                               home.data(),
                                                               tr("Depth image (*.oni)"))
                                      .toStdString();
-    m_ui->m_canvas->setUpdatesEnabled(false);
+    if (filename.empty())
+        return;
     m_ui->m_canvas->loadFile(filename);
 }
 
@@ -52,6 +57,15 @@ void MainWindow::onForward()
     const bool active = m_ui->m_canvas->updatesEnabled();
     if (active)
         return;
+    emit seek(true);
+}
+
+void MainWindow::onRewind()
+{
+    const bool active = m_ui->m_canvas->updatesEnabled();
+    if (active)
+        return;
+    emit seek(false);
 }
 
 void MainWindow::onPlay()
@@ -67,12 +81,17 @@ void MainWindow::onPlay()
     }
 }
 
-void MainWindow::onTimeUpdate(std::uint64_t timestamp)
+void MainWindow::onTimeUpdate(const openni::VideoFrameRef *frame)
 {
-    m_ui->label->setText(QTime::fromMSecsSinceStartOfDay(timestamp).toString("hh:mm:ss.zzz"));
+    // testing
+    m_ui->label->setText(
+        QTime::fromMSecsSinceStartOfDay(frame->getTimestamp()).toString("hh:mm:ss.zzz"));
 }
 
-void MainWindow::onFileLoaded() {}
+void MainWindow::onFileLoaded()
+{
+    m_ui->m_play->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
+}
 
 void MainWindow::onFileLoadFailure(const std::string &filename)
 {
@@ -90,5 +109,18 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
     case Qt::Key_2:
         emit changeVideoMode(GLWindow::VideoMode::DepthChannel);
         break;
+    case Qt::Key_Space:
+        onPlay();
+        break;
     }
+}
+
+void MainWindow::onTimelineInit(std::uint32_t frameNumber)
+{
+    m_ui->m_timeline->setMaximum(frameNumber);
+}
+
+void MainWindow::onTimelineUpdate(const openni::VideoFrameRef *frame)
+{
+    m_ui->m_timeline->setValue(frame->getFrameIndex());
 }

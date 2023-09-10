@@ -10,8 +10,9 @@ public:
     OniVideoStream() = default;
     ~OniVideoStream();
 
-    bool create(const OniDevice &device, openni::SensorType mode);
+    bool create(OniDevice &device, openni::SensorType mode);
     openni::VideoStream *get() noexcept;
+    const openni::VideoStream &ref() const noexcept;
 
 private:
     openni::VideoStream m_stream;

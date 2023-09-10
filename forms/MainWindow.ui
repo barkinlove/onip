@@ -65,7 +65,7 @@
      <string/>
     </property>
    </widget>
-   <widget class="QSlider" name="timelapse">
+   <widget class="QSlider" name="m_timeline">
     <property name="geometry">
      <rect>
       <x>140</x>

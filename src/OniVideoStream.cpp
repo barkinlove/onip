@@ -16,7 +16,7 @@ openni::VideoStream *OniVideoStream::get() noexcept
     return &m_stream;
 }
 
-bool OniVideoStream::create(const OniDevice &device, openni::SensorType mode)
+bool OniVideoStream::create(OniDevice &device, openni::SensorType mode)
 {
     openni::Status status = m_stream.create(device.get(), mode);
     std::string sensorType = "";
@@ -43,4 +43,9 @@ bool OniVideoStream::create(const OniDevice &device, openni::SensorType mode)
         return false;
     }
     return true;
+}
+
+const openni::VideoStream &OniVideoStream::ref() const noexcept
+{
+    return m_stream;
 }

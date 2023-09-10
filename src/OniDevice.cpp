@@ -11,7 +11,17 @@ OniDevice::~OniDevice()
     m_device.close();
 }
 
-const openni::Device &OniDevice::get() const noexcept
+openni::Device &OniDevice::get() noexcept
 {
     return m_device;
+}
+
+void OniDevice::close()
+{
+    m_device.close();
+}
+
+bool OniDevice::isValid() const noexcept
+{
+    return m_device.isValid();
 }
