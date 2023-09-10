@@ -13,4 +13,5 @@ public:
 
 private:
     MainWindow m_window;
+    std::int32_t m_argc;
 };

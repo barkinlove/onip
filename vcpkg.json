@@ -3,6 +3,7 @@
   "name": "onip",
   "version-string": "0.0.1",
   "dependencies": [
-    "openni2"
+    "openni2",
+    "freeglut"
   ]
 }

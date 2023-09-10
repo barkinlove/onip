@@ -20,9 +20,10 @@ endif()
 
 # TODO: add for unix-like later
 
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Multimedia)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Multimedia)
-#find_package()
+find_package(OpenGL REQUIRED)
+find_package(GLUT REQUIRED)
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets OpenGL)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets OpenGL)
 
 set(INTERNAL_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/src/include")
 
@@ -55,6 +56,12 @@ else()
         add_executable(${PROJECT_NAME}
             ${PROJECT_SOURCES}
             vcpkg.json
+            src/include/GLWindow.hpp
+            src/GLWindow.cpp
+            src/include/OniDevice.hpp
+            src/OniDevice.cpp
+            src/include/OniVideoStream.hpp
+            src/OniVideoStream.cpp
         )
     endif()
 endif()
@@ -68,7 +75,9 @@ endif()
 target_link_libraries(
     ${PROJECT_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Widgets
-    Qt${QT_VERSION_MAJOR}::Multimedia
+    Qt${QT_VERSION_MAJOR}::OpenGL
+    ${OPENG_LIBRARIES}
+    GLUT::GLUT
     ${OPENNI2_LIB_FILE}
 )
 
