@@ -36,10 +36,10 @@ Press space or play/pause button in order to start / stop the video.
 In order to change color image with z-buffer, press 1 and 2 correspondingly.
 
 ### What has been implemented:
-- Open `.oni` file through `QFileDialog`.
+- Open `.oni` file through the `QFileDialog`.
 - Color and z-buffer image rendering.
 - You can play and pause the video.
-- You can choose an arbitrary frame using timeline.
+- You can choose an arbitrary frame using the timeline.
 
 ### What has not been:
 - Seek forward and rewind by frame.
