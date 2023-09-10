@@ -77,6 +77,7 @@ void GLWindow::paintGL()
 
     bool colorChannel = m_currentMode == VideoMode::ColorChannel
                         && stream->getSensorInfo().getSensorType() == openni::SENSOR_COLOR;
+
     if (colorChannel) {
         glTexImage2D(GL_TEXTURE_2D,
                      0,
@@ -92,6 +93,23 @@ void GLWindow::paintGL()
     bool depthChannel = m_currentMode == VideoMode::DepthChannel
                         && stream->getSensorInfo().getSensorType() == openni::SENSOR_DEPTH;
     if (depthChannel) {
+        int maxDepth = 3500;
+        int minDepth = 350;
+        std::vector<openni::DepthPixel> correctDepth;
+        correctDepth.resize(frame->getHeight() * frame->getWidth());
+        auto depthBufferData = static_cast<const openni::DepthPixel *>(frame->getData());
+        const size_t size = frame->getStrideInBytes() / sizeof(openni::DepthPixel);
+
+        for (int y = 0; y < frame->getHeight(); ++y) {
+            for (int x = 0; x < frame->getWidth(); ++x) {
+                const openni::DepthPixel *currentPixel = depthBufferData + y * size + x;
+                size_t idx = y * size + x;
+                if (*currentPixel) {
+                    correctDepth[idx] = maxDepth - (*currentPixel - minDepth);
+                }
+            }
+        }
+
         glTexImage2D(GL_TEXTURE_2D,
                      0,
                      GL_DEPTH_COMPONENT,
@@ -100,7 +118,7 @@ void GLWindow::paintGL()
                      0,
                      GL_DEPTH_COMPONENT,
                      GL_SHORT,
-                     frame->getData());
+                     correctDepth.data());
     }
 
     glBegin(GL_QUADS);
