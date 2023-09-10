@@ -4,7 +4,7 @@
 #include "OniVideoStream.hpp"
 #include <GL/glut.h>
 
-#include <iostream>
+#include <cmath>
 #include <ranges>
 #include <set>
 
@@ -35,35 +35,106 @@ void GLWindow::resizeGL(int w, int h)
     updateGL();
 }
 
-static std::set<std::uint64_t> timestamps = {};
+// it was too late when I found out that openni::RGB888Pixel has no overloaded arithmetical operators
 
-void GLWindow::paintGL()
+void applySobel(const openni::VideoFrameRef *frame)
 {
-    if (!m_loaded || m_finished) {
-        glClear(GL_COLOR_BUFFER_BIT);
-        return;
-    }
+    //    std::vector<openni::RGB888Pixel> grayScaledImg;
+    //    std::size_t imgSize = frame->getHeight() * frame->getWidth();
+    //    grayScaledImg.resize(imgSize);
+    //    auto frameBuffer = static_cast<const openni::RGB888Pixel *>(frame->getData());
+    //    const size_t size = frame->getStrideInBytes() / sizeof(openni::RGB888Pixel);
 
-    std::int32_t streamReadyIdx = 0;
-    openni::Status status = openni::OpenNI::waitForAnyStream(m_streams.data(),
-                                                             m_streams.size(),
-                                                             &streamReadyIdx);
-    if (status != openni::STATUS_OK) {
-        return;
-    }
+    //    for (int y = 0; y < frame->getHeight(); ++y) {
+    //        for (int x = 0; x < frame->getWidth(); ++x) {
+    //            const openni::RGB888Pixel *currentPixel = frameBuffer + y * size + x;
+    //            size_t idx = y * size + x;
+    //            std::uint32_t sum = 0;
+    //            sum += currentPixel->r;
+    //            sum += currentPixel->g;
+    //            sum += currentPixel->b;
+    //            std::uint8_t avg = sum / 3;
+    //            grayScaledImg[idx] = openni::RGB888Pixel{avg, avg, avg};
+    //        }
+    //    }
+    //    std::vector<openni::RGB888Pixel> bufferX;
+    //    std::vector<openni::RGB888Pixel> bufferY;
+    //    std::vector<openni::RGB888Pixel> gx;
+    //    std::vector<openni::RGB888Pixel> gy;
+    //    bufferX.resize(imgSize);
+    //    bufferY.resize(imgSize);
+    //    gx.resize(imgSize);
+    //    gy.resize(imgSize);
+    //    for (int y = 1; y < frame->getHeight() - 1; ++y) {
+    //        for (int x = 0; x < frame->getWidth(); ++x) {
+    //            const openni::RGB888Pixel *currentPixel = frameBuffer + y * size + x;
+    //            size_t idx = y * size + x;
+    //            bufferX[idx] = grayScaledImg[idx + 1] - grayScaledImg[idx - 1];
+    //            bufferY[idx] = 1 * grayScaledImg[idx] + 2 * grayScaledImg[idx] + 1 * grayScaledImg[idx];
+    //        }
+    //    }
+    //    for (int y = 1; y < frame->getHeight() - 1; ++y) {
+    //        for (int x = 0; x < frame->getWidth(); ++x) {
+    //            const openni::RGB888Pixel *currentPixel = frameBuffer + y * size + x;
+    //            size_t idx = y * size + x;
+    //            // checkout indicies later, but imho it shuould work
+    //            gx[idx] = 1 * bufferX[idx] + 2 * bufferX[idx] + 1 * bufferX[idx];
+    //            gy[idx] = bufferY[idx + 1] - bufferY[idx - 1];
+    //        }
+    //    }
 
-    openni::VideoStream *stream = m_streams[streamReadyIdx];
-    openni::VideoFrameRef *frame = &m_frames[streamReadyIdx];
+    //    float threshold = 0.1f;
+    //    std::vector<openni::RGB888Pixel> intensity;
+    //    std::vector<opnnni::RGB888Pixel> direction;
+    //    intensity.resize(imgSize);
+    //    direction.resize(imgSize);
+    //    float maxIntense = 0.f, minIntense = 1000000.f;
+    //    for (int i = 0; i < imgSize; ++i) {
+    //        float x = gx[i];
+    //        float y = gy[i];
+    //        intensity[i] = std::sqrt(x * x + y * y);
+    //        maxIntense = std::max(maxIntense, intensity[i]);
+    //        minIntense = std::min(minIntense, intensity[i]);
+    //        direction[i] = std::atan2(x, y);
+    //    }
+    //    static const s_pi = std::acos(-1.f);
+    //    float value = 0.f;
+    //    for (int i = 0; i < imgSize; ++i) {
+    //        float hue = direction[i] * 180.f / s_pi + 180.f;
+    //        if (maxIntense == minIntense) {
+    //            value = 0.f;
+    //        } else {
+    //            float t = 255 * (intensity[i] - minIntense) / (maxIntense - minIntense);
+    //            value = t > threshold ? t : 0;
+    //        }
+    //        float saturation = l = value;
 
-    stream->readFrame(frame);
+    //        // hls to rgb conversion
+    //    }
+    //    return grayScaledImg;
+}
 
-    if (std::ranges::any_of(timestamps, [target = frame->getTimestamp()](auto &timestamp) {
-            return timestamp == target;
-        })) {
-        m_finished = true;
-        return;
-    }
+void GLWindow::drawImg()
+{
+    glBegin(GL_QUADS);
 
+    glTexCoord2f(0.0f, 1.0f);
+    glVertex3f(-1.0f, -1.0f, 1.0f);
+
+    glTexCoord2f(1.0f, 1.0f);
+    glVertex3f(1.0f, -1.0f, 1.0f);
+
+    glTexCoord2f(1.0f, 0.0f);
+    glVertex3f(1.0f, 1.0f, 1.0f);
+
+    glTexCoord2f(0.0f, 0.0f);
+    glVertex3f(-1.0f, 1.0f, 1.0f);
+
+    glEnd();
+}
+
+void GLWindow::beforeDraw()
+{
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glMatrixMode(GL_PROJECTION);
     glOrtho(0.f, width(), height(), 0.f, -1.f, 1.f);
@@ -74,11 +145,39 @@ void GLWindow::paintGL()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+}
+
+void GLWindow::paintGL()
+{
+    if (!m_loaded)
+        return;
+
+    std::int32_t streamReadyIdx = 0;
+    openni::Status status = openni::OpenNI::waitForAnyStream(m_streams.data(),
+                                                             m_streams.size(),
+                                                             &streamReadyIdx);
+    if (status != openni::STATUS_OK)
+        return;
+
+    openni::VideoStream *stream = m_streams[streamReadyIdx];
+    openni::VideoFrameRef *frame = &m_frames[streamReadyIdx];
+
+    stream->readFrame(frame);
+
+    if (!frame->isValid())
+        return;
+
+    beforeDraw();
 
     bool colorChannel = m_currentMode == VideoMode::ColorChannel
                         && stream->getSensorInfo().getSensorType() == openni::SENSOR_COLOR;
 
+    bool applySobel = false;
     if (colorChannel) {
+        std::vector<openni::RGB888Pixel> sobelProcessed;
+        if (m_sobel) {
+            //            sobelProcessed = applySobel(frame);
+        }
         glTexImage2D(GL_TEXTURE_2D,
                      0,
                      GL_RGB,
@@ -120,30 +219,13 @@ void GLWindow::paintGL()
                      GL_SHORT,
                      correctDepth.data());
     }
-
-    glBegin(GL_QUADS);
-
-    glTexCoord2f(0.0f, 1.0f);
-    glVertex3f(-1.0f, -1.0f, 1.0f);
-
-    glTexCoord2f(1.0f, 1.0f);
-    glVertex3f(1.0f, -1.0f, 1.0f);
-
-    glTexCoord2f(1.0f, 0.0f);
-    glVertex3f(1.0f, 1.0f, 1.0f);
-
-    glTexCoord2f(0.0f, 0.0f);
-    glVertex3f(-1.0f, 1.0f, 1.0f);
-
-    glEnd();
-
-    timestamps.insert(frame->getTimestamp());
+    drawImg();
     emit updateTime(frame->getTimestamp());
 }
 
 void GLWindow::loadFile(const std::string &filename)
 {
-    m_playbackTime.restart();
+    setUpdatesEnabled(false);
     m_finished = false;
 
     if (!m_device.open(filename.data())) {
@@ -160,9 +242,16 @@ void GLWindow::loadFile(const std::string &filename)
         emit onFileLoaded();
     else
         emit onFileLoadedFailure(filename);
+
+    setUpdatesEnabled(true);
 }
 
 void GLWindow::onVideoModeChanged(VideoMode mode)
 {
     m_currentMode = mode;
+}
+
+void GLWindow::onSobelCheckBoxPressed()
+{
+    m_sobel != m_sobel;
 }

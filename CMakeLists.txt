@@ -16,9 +16,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if (WIN32)
     set(OPENNI2_LIB_PATH "${CMAKE_SOURCE_DIR}/external/vcpkg/packages/openni2_x86-windows")
+else()
+    set(OPENNI2_LIB_PATH "{CMAKE_SOURCE_DIR}/external/OpenNI-Linux-x64-2.3")
 endif()
-
-# TODO: add for unix-like later
 
 find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
@@ -32,8 +32,14 @@ set(PROJECT_SOURCES
         "${CMAKE_SOURCE_DIR}/src/MainWindow.cpp"
         "${CMAKE_SOURCE_DIR}/forms/MainWindow.ui"
         "${CMAKE_SOURCE_DIR}/src/Application.cpp"
+        "${CMAKE_SOURCE_DIR}/src/GLWindow.cpp"
+        "${CMAKE_SOURCE_DIR}/src/OniDevice.cpp"
+        "${CMAKE_SOURCE_DIR}/src/OniVideoStream.cpp"
         "${INTERNAL_INCLUDE_DIR}/Application.hpp"
         "${INTERNAL_INCLUDE_DIR}/MainWindow.hpp"
+        "${INTERNAL_INCLUDE_DIR}/OniDevice.hpp"
+        "${INTERNAL_INCLUDE_DIR}/OniVideoStream.hpp"
+        "${INTERNAL_INCLUDE_DIR}/GLWindow.hpp"
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
@@ -56,21 +62,15 @@ else()
         add_executable(${PROJECT_NAME}
             ${PROJECT_SOURCES}
             vcpkg.json
-            src/include/GLWindow.hpp
-            src/GLWindow.cpp
-            src/include/OniDevice.hpp
-            src/OniDevice.cpp
-            src/include/OniVideoStream.hpp
-            src/OniVideoStream.cpp
         )
     endif()
 endif()
 
 if (WIN32)
     set(OPENNI2_LIB_FILE "${OPENNI2_LIB_PATH}/lib/OpenNI2.lib")
+else()
+    set(OPENNI2_LIB_FILE "${OPENNI2_LIB_PATH}}/Redist/libOpenNI2.so")
 endif()
-
-# TODO: implement for unix-like a bit later
 
 target_link_libraries(
     ${PROJECT_NAME} PRIVATE
@@ -86,8 +86,6 @@ target_include_directories(
     ${INTERNAL_INCLUDE_DIR}
     "${OPENNI2_LIB_PATH}/Include"
 )
-
-target_compile_definitions(${PROJECT_NAME} PUBLIC /wd9025)
 
 target_compile_options(
   ${PROJECT_NAME} PRIVATE

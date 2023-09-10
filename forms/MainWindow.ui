@@ -119,6 +119,19 @@
      </size>
     </property>
    </widget>
+   <widget class="QCheckBox" name="m_sobelCheckBox">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>730</y>
+      <width>78</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>apply Sobel</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">

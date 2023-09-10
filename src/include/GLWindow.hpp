@@ -22,11 +22,16 @@ public:
 
 public slots:
     void onVideoModeChanged(VideoMode mode);
+    void onSobelCheckBoxPressed();
 
 signals:
     void updateTime(std::uint64_t timestamp);
     void onFileLoadedFailure(const std::string &filename);
     void onFileLoaded();
+
+private:
+    void beforeDraw();
+    void drawImg();
 
 private:
     OniDevice m_device;
@@ -36,6 +41,7 @@ private:
     std::vector<openni::VideoFrameRef> m_frames;
     bool m_loaded;
     bool m_finished;
+    bool m_sobel;
     std::unique_ptr<QTimer> m_timer;
     QTime m_playbackTime;
     VideoMode m_currentMode;

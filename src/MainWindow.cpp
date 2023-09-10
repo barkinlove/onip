@@ -1,8 +1,10 @@
 #include "MainWindow.hpp"
 #include <QFileDialog>
+#include <QGLWidget>
 #include <QMessageBox>
 #include <QStyle>
 #include <QTime>
+#include <QTimer>
 #include "ui_MainWindow.h"
 
 #include <iostream>
@@ -15,6 +17,8 @@ MainWindow::MainWindow(QWidget *parent)
     m_ui->m_play->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
     m_ui->m_forward->setIcon(style()->standardIcon(QStyle::SP_MediaSeekForward));
     m_ui->m_rewind->setIcon(style()->standardIcon(QStyle::SP_MediaSeekBackward));
+    // TODO: remove this when sobel operator will be introduced
+    m_ui->m_sobelCheckBox->setDisabled(true);
     connect(m_ui->m_openAction, &QAction::triggered, this, &MainWindow::onOpenFile);
     connect(m_ui->m_forward, &QPushButton::clicked, this, &MainWindow::onForward);
     connect(m_ui->m_play, &QPushButton::clicked, this, &MainWindow::onPlay);
@@ -22,6 +26,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_ui->m_canvas, &GLWindow::onFileLoadedFailure, this, &MainWindow::onFileLoadFailure);
     connect(m_ui->m_canvas, &GLWindow::onFileLoaded, this, &MainWindow::onFileLoaded);
     connect(this, &MainWindow::changeVideoMode, m_ui->m_canvas, &GLWindow::onVideoModeChanged);
+    connect(m_ui->m_sobelCheckBox,
+            &QCheckBox::clicked,
+            m_ui->m_canvas,
+            &GLWindow::onSobelCheckBoxPressed);
 }
 
 MainWindow::~MainWindow() = default;
@@ -44,8 +52,6 @@ void MainWindow::onForward()
     const bool active = m_ui->m_canvas->updatesEnabled();
     if (active)
         return;
-
-    m_ui->m_canvas->updateGL();
 }
 
 void MainWindow::onPlay()
